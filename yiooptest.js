@@ -38,7 +38,7 @@ function writeToFile(filename,contents){
 
 function renderTestResults(){
     console.log(JSON.stringify(results));
-    writeToFile(path,JSON.stringify(results));
+    //writeToFile(path,JSON.stringify(results));
 }
 
 /**
@@ -121,7 +121,7 @@ var steps = [
         }
         return result;
     },
-    function testHelpButtonExists() {
+    function testManageGroupsLinkExists() {
         var result = page.assertExists('body > div.component-container > div:nth-child(3) > ul > li:nth-child(1) > a', "Manage groups Link exists", page);
         if (result.ack) {
             page.render('img/loggedin.png');
@@ -143,7 +143,7 @@ var steps = [
         }
         return result;
     },
-    function() {
+    function testEditLinkForHelpArticlsExists() {
         var result = page.assertExists('#page_name > a', "Edit Link for Help article exists", page);
         if (result.ack) {
             page.render('img/help_open_browse_groups.png');
@@ -165,7 +165,6 @@ var steps = [
 
 
 interval = setInterval(function() {
-    writeToFile(path,"");
     if (!loadInProgress && typeof steps[testindex] == "function") {
         var func = steps[testindex];
         var result = steps[testindex]();
