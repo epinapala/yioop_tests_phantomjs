@@ -4,7 +4,7 @@ var page = require('webpage').create(),
     fs = require('fs'),
     path = 'results.json',
     results = {};
-
+var DEBUG = false;
 /**
 * set viewport for debugging using slimerjs.
 */
@@ -18,8 +18,9 @@ page.viewportSize = {
 * Helper Functions
 */
 function l(msg){
-    console.log("[Debug] : " + msg);
-};
+    !DEBUG || console.log("[Debug] : " + msg);
+}
+
 function functionName(fun) {
     var ret = fun.toString();
     ret = ret.substr('function '.length);
@@ -56,8 +57,8 @@ page.onLoadFinished = function() {
 };
 
 page.click = function(selector) {
+    l("Clicking Element[ " + selector + "]");
     this.evaluate(function(selector,l) {
-        l("Clicking Element[ " + selector + "]");
         var e = document.createEvent("MouseEvents");
         e.initEvent("click", true, true);
         document.querySelector(selector).dispatchEvent(e);
@@ -73,8 +74,6 @@ page.assertExists = function(selector, message) {
         return document.querySelector(selector);
     }, selector);
 
-
-
     if (res.elm) {
         res.status = "PASS";
         res.ack = true;
@@ -87,18 +86,14 @@ page.assertExists = function(selector, message) {
 };
 
 var steps = [
-
     function testHomePage() {
-        //Load Login Page
         page.open("http://localhost/yioop", function() {
-            console.log("PASS - Open Home page.");
             return true;
         });
     },
     function testSignInLink() {
         var result = page.assertExists('body > div.landing-top-bar > div.user-nav > ul > li:nth-child(2) > a', "Signin link exists", page);
         if (result.ack) {
-            page.render('img/home.png');
             page.evaluate(function() {
                 var ev = document.createEvent("MouseEvents");
                 ev.initEvent("click", true, true);
@@ -106,7 +101,7 @@ var steps = [
             });
 
         } else {
-            console.log("Failed Test");
+            l("Failed Test");
         }
         return result;
     },
@@ -122,7 +117,7 @@ var steps = [
                 return;
             });
         } else {
-            console.log("Failed Test");
+            l("Failed Test");
         }
         return result;
     },
@@ -132,7 +127,7 @@ var steps = [
             page.render('img/loggedin.png');
             page.click('body > div.component-container > div:nth-child(3) > ul > li:nth-child(1) > a');
         } else {
-            console.log("Failed Test");
+            l("Failed Test");
         }
         return result;
     },
@@ -144,7 +139,7 @@ var steps = [
             //click on help
             page.click('button[data-pagename="Browse Groups"]');
         } else {
-            console.log("Failed Test");
+            l("Failed Test");
         }
         return result;
     },
@@ -155,7 +150,7 @@ var steps = [
             page.click('#page_name > a');
 
         } else {
-            console.log("Failed Test");
+            l("Failed Test");
         }
         return result;
     },
@@ -172,90 +167,20 @@ var steps = [
 interval = setInterval(function() {
     writeToFile(path,"");
     if (!loadInProgress && typeof steps[testindex] == "function") {
-        //console.log(">>>> Step " + (testindex + 1) + " <<<<<<");
         var func = steps[testindex];
         var result = steps[testindex]();
         var function_name = functionName(func);
-        console.log("Test #" + (testindex + 1) + ": " + function_name);
+        l("Test #" + (testindex + 1) + ": " + function_name);
         if (result) { 
-            console.log(result.status + " - " + result.msg);
+            l(result.status + " - " + result.msg);
             delete result.elm;
             results[function_name] = (result);
         }
         testindex++;
     }
     if (typeof steps[testindex] != "function") {
-        console.log("All Tests complete!");
+        l("All Tests complete!");
         renderTestResults();
         phantom.exit();
     }
 }, 2000);
-
-/*
-var assertExists = function(selector, message, page) {
-  var res = {};
-  res.msg = message;
-  res.elm = null;
-  
-    res.elm = page.evaluate(function(selector) {
-      return document.querySelector(selector);
-    }, selector);
-  
-
-
-  if (res.elm) {
-    res.status = "PASS";
-    res.ack = true;
-  } else {
-    res.status = "FAIL";
-    res.ack = false;
-  }
-
-  console.log(res.status + " ->>>> " + res.msg);
-  return res;
-};
-
-
-
-
-
-
-
-function waitFor(page, selector, expiry, callback) {
-  system.stderr.writeLine("- waitFor( " + selector + ", " + expiry + " )");
-
-  // try and fetch the desired element from the page
-  var result = page.evaluate(
-    function(selector) {
-      return document.querySelector(selector);
-    }, selector
-  );
-
-  // if desired element found then call callback after 50ms
-  if (result) {
-    system.stderr.writeLine("- trigger " + selector + " found");
-    window.setTimeout(
-      function() {
-        callback(true);
-      },
-      50
-    );
-    return;
-  }
-
-  // determine whether timeout is triggered
-  var finish = (new Date()).getTime();
-  if (finish > expiry) {
-    system.stderr.writeLine("- timed out");
-    callback(false);
-    return;
-  }
-
-  // haven't timed out, haven't found object, so poll in another 100ms
-  window.setTimeout(
-    function() {
-      waitFor(page, selector, expiry, callback);
-    },
-    100
-  );
-}*/
