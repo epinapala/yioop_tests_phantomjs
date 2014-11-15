@@ -7,6 +7,10 @@ class YioopPhantomRunner
         if($bin_path !== null) {
             $this->phantomjs_bin_path = $bin_path;
         }
+        $version = $this->execute("-v");
+        if(!$version){
+            die("PhantomJS Not found, Skipping UI Tests");
+        }
     }
     public function execute($script,$decode_json = false)
     {

@@ -46,6 +46,10 @@ class PhantomjsUiTest extends JavascriptUnitTest
             "/Users/epinapala/yioop_tests/yiooptest.js",false));
         ?>
         <div id="UITest">
+            <?php if(!$test_results){
+                die("Unable to Run tests, Please try Debug mode.");
+            }
+            ?>
         </div>
         <script type="text/javascript">
             var results = <?php echo $test_results; ?>
