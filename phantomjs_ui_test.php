@@ -42,27 +42,32 @@ class PhantomjsUiTest extends JavascriptUnitTest
         ?>
         <script type="text/javascript" src="../scripts/basic.js"></script>
         <script type="text/javascript" src="../scripts/help.js"></script>
-        <div id="UITest">
-            <div style="width:200px;">
-                Loading results
-                <marquee
-                    behavior="alternate">..............
-                </marquee>
-            </div>
+        <div id="web-ui-test">
+        </div>
+        <div id="mobile-ui-test">
         </div>
         <script type="text/javascript">
-            var results = {};
-            getPageWithCallback("phantom.php", "json",
-                function (data)
-                {
-                    renderResults((JSON.parse(data.results)))
-                }, function (status)
-                {
-                    elt("UITest").innerHTML = "Unable to run UI tests.";
-                });
-            function renderResults(results)
-            {
-                elt("UITest").innerHTML = "";
+            runTests("web");
+            runTests("mobile");
+            function runTests(mode) {
+                elt(mode + "-ui-test").innerHTML = '<div style="width:200px;">'
+                +'Loading '+ mode + '-UI test Results<marquee ' +
+                'behavior="alternate">.............' + '</marquee></div>';
+                getPageWithCallback("phantom.php?mode=" + mode, "json",
+                    function(data) {
+                        renderResults((JSON.parse(data.results)), mode)
+                    },
+                    function(status) {
+                        elt(mode + "-ui-test").innerHTML = "Unable to run " +
+                        mode + " UI tests.";
+                    });
+            }
+
+            function renderResults(results, mode) {
+                elt(mode + "-ui-test").innerHTML = "";
+                var h2 = document.createElement("h2");
+                h2.innerHTML = "UI test results - " + mode;
+                elt(mode + "-ui-test").appendChild(h2);
                 table = document.createElement('table');
                 for (var key in results) {
                     var test_result = results[key];
@@ -70,7 +75,7 @@ class PhantomjsUiTest extends JavascriptUnitTest
                     var row;
                     var table;
                     var color;
-                    if(test_result.ack) {
+                    if (test_result.ack) {
                         color = 'lightgreen';
                     } else {
                         color = 'red';
@@ -82,10 +87,9 @@ class PhantomjsUiTest extends JavascriptUnitTest
                     cell = row.insertCell(1);
                     cell.setAttribute("style", "background-color: " + color + ";");
                     cell.innerHTML = test_result.status;
-                    document.getElementById("UITest").appendChild(table);
+                    elt(mode + "-ui-test").appendChild(table);
                 }
             }
-
         </script>
     <?php
     }
