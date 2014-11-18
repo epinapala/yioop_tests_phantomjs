@@ -3,11 +3,18 @@ var page = require('webpage').create(),
     loadInProgress = false,
     fs = require('fs'),
     path = 'results.json',
-    results = {};
-var DEBUG = false;
+    results = {},
+    system = require('system'),
+    args = system.args,
+    DEBUG = false;
+
+if(args[1] === "true"){
+    DEBUG = true;
+}
+
 /**
-* set viewport for debugging using slimerjs.
-*/
+ * set viewport for debugging using slimerjs.
+ */
 page.viewportSize = {
     width: 1440,
     height: 768
@@ -15,9 +22,9 @@ page.viewportSize = {
 
 
 /**
-* Helper Functions
-*/
-function l(msg){
+ * Helper Functions
+ */
+function l(msg) {
     !DEBUG || console.log("[Debug] : " + msg);
 }
 
@@ -28,22 +35,22 @@ function functionName(fun) {
     return ret;
 }
 
-function writeToFile(filename,contents){
+function writeToFile(filename, contents) {
     try {
         fs.write(filename, contents, 'w');
-    } catch(e) {
+    } catch (e) {
         console.log(e);
     }
 }
 
-function renderTestResults(){
+function renderTestResults() {
     console.log(JSON.stringify(results));
     //writeToFile(path,JSON.stringify(results));
 }
 
 /**
-* PhantomJs Tests setup.
-**/
+ * PhantomJs Tests setup.
+ **/
 page.onConsoleMessage = function(msg) {
     console.log(msg);
 };
@@ -58,11 +65,11 @@ page.onLoadFinished = function() {
 
 page.click = function(selector) {
     l("Clicking Element[ " + selector + "]");
-    this.evaluate(function(selector,l) {
+    this.evaluate(function(selector, l) {
         var e = document.createEvent("MouseEvents");
         e.initEvent("click", true, true);
         document.querySelector(selector).dispatchEvent(e);
-    }, selector,l);
+    }, selector, l);
 };
 
 page.assertExists = function(selector, message) {
@@ -86,6 +93,7 @@ page.assertExists = function(selector, message) {
 };
 
 var steps = [
+
     function testHomePage() {
         page.open("http://localhost/yioop", function() {
             return true;
@@ -170,7 +178,7 @@ interval = setInterval(function() {
         var result = steps[testindex]();
         var function_name = functionName(func);
         l("Test #" + (testindex + 1) + ": " + function_name);
-        if (result) { 
+        if (result) {
             l(result.status + " - " + result.msg);
             delete result.elm;
             results[function_name] = (result);

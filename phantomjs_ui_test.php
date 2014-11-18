@@ -24,7 +24,6 @@
  * @copyright 2009 - 2014
  * @filesource
  */
-
 /**
  * Used to test the UI using PhantomJs.
  *
@@ -40,43 +39,55 @@ class PhantomjsUiTest extends JavascriptUnitTest
      */
     function UITestCase()
     {
-        require_once 'YioopPhantomRunner.php';
-        $yioop_phantom_runner = new YioopPhantomRunner();
-        $test_results = ($yioop_phantom_runner->execute(
-            "/Users/epinapala/yioop_tests/yiooptest.js",false));
         ?>
+        <script type="text/javascript" src="../scripts/basic.js"></script>
+        <script type="text/javascript" src="../scripts/help.js"></script>
         <div id="UITest">
-            <?php if(!$test_results){
-                die("Unable to Run tests, Please try Debug mode.");
-            }
-            ?>
+            <div style="width:200px;">
+                Loading results
+                <marquee
+                    behavior="alternate">..............
+                </marquee>
+            </div>
         </div>
         <script type="text/javascript">
-            var results = <?php echo $test_results; ?>
-            table = document.createElement('table');
-            for (var key in results) {
-                var test_result = results[key];
-                var cell;
-                var row;
-                var table;
-                var color;
-                if(test_result.ack) {
-                    color = 'lightgreen';
-                } else {
-                    color = 'red';
+            var results = {};
+            getPageWithCallback("phantom.php", "json",
+                function (data)
+                {
+                    renderResults((JSON.parse(data.results)))
+                }, function (status)
+                {
+                    elt("UITest").innerHTML = "Unable to run UI tests.";
+                });
+            function renderResults(results)
+            {
+                elt("UITest").innerHTML = "";
+                table = document.createElement('table');
+                for (var key in results) {
+                    var test_result = results[key];
+                    var cell;
+                    var row;
+                    var table;
+                    var color;
+                    if(test_result.ack) {
+                        color = 'lightgreen';
+                    } else {
+                        color = 'red';
+                    }
+                    row = table.insertRow(0);
+                    cell = row.insertCell(0);
+                    cell.style.fontWeight = 'bold';
+                    cell.innerHTML = key;
+                    cell = row.insertCell(1);
+                    cell.setAttribute("style", "background-color: " + color + ";");
+                    cell.innerHTML = test_result.status;
+                    document.getElementById("UITest").appendChild(table);
                 }
-                row = table.insertRow(0);
-                cell = row.insertCell(0);
-                cell.style.fontWeight = 'bold';
-                cell.innerHTML = key;
-                cell = row.insertCell(1);
-                cell.setAttribute("style", "background-color: " + color + ";");
-                cell.innerHTML = test_result.status;
-                document.getElementById("UITest").appendChild(table);
             }
+
         </script>
     <?php
     }
 }
-
 ?>
